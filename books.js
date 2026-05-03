@@ -1,12 +1,76 @@
+let books;
+
+async function renderBooks(filter) {
+  const booksWrapper = document.querySelector(".books");
+  booksWrapper.classList.add("books__loading");
+
+  if(!books) books = await getBooks();
+  
+  booksWrapper.classList.remove("books__loading");
+
+  if (filter === "LOW_TO_ HIGH")
+    books.sort((a, b) => (a.salePrice || a.originalPrice) - (b.salePrice || b.originalPrice));
+  else if (filter === "HIGH_TO_LOW")
+    books.sort((a, b) => (b.salePrice || b.originalPrice) - (a.salePrice || a.originalPrice));
+  else if (filter === "RATING") 
+    books.sort((a, b) => b.rating - a.rating);
+
+  const booksHtml = books.map((book) => {
+    return `
+          <div class="book">
+            <figure class="book__img--wrapper">
+              <img class="book__img" src="${book.url}" alt="">
+            </figure>
+            <div class="book__title">
+              ${book.title}
+            </div>
+            <div class="book__ratings">
+              ${getRatingHtml(book.rating)}
+            </div>
+            <div class="book__price">
+              ${getPriceHtml(book.originalPrice, book.salePrice)}
+            </div>
+          </div>`; 
+    }).join("");
+  
+  booksWrapper.innerHTML = booksHtml;
+}
+
+
+
+setTimeout(() => {
+  renderBooks();
+});
+
+
+function filterBooks(event) {
+  renderBooks(event.target.value);
+}
+
+function getPriceHtml(originalPrice, salePrice) {
+  return salePrice !== null? 
+          `<span class="book__price--normal">$${originalPrice.toFixed(2)}</span> $${salePrice.toFixed(2)}`
+          : `<span>$${originalPrice.toFixed(2)}</span>`;
+}
+
+function getRatingHtml(rating) {
+  let ratingHtml = "";
+  for (let i = 0; i < Math.floor(rating); i++) ratingHtml += `<i class="fas fa-star"></i>`;
+  if (rating % 1 !== 0) ratingHtml += `<i class="fas fa-star-half-alt"></i>`;
+  return ratingHtml;
+}
+
 
 
 // FAKE DATA
 function getBooks() {
-  return [
-    {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve(
+    [{
       id: 1,
       title: "Crack the Coding Interview",
-                url: "assets/crack the coding interview.png",
+      url: "assets/crack the coding interview.png",
       originalPrice: 49.95,
       salePrice: 14.95,
       rating: 4.5,
@@ -25,7 +89,7 @@ function getBooks() {
       url: "assets/deep work.jpeg",
       originalPrice: 29,
       salePrice: 12,
-      rating: 5,
+      rating: 3,
     },
     {
       id: 4,
@@ -48,7 +112,7 @@ function getBooks() {
       title: "Rich Dad Poor Dad",
       url: "assets/book-3.jpeg",
       originalPrice: 70,
-      salePrice: 12.5,
+      salePrice: null,
       rating: 5,
     },
     {
@@ -57,7 +121,7 @@ function getBooks() {
       url: "assets/book-4.jpeg",
       originalPrice: 11,
       salePrice: 10,
-      rating: 4,
+      rating: 2,
     },
     {
       id: 8,
@@ -81,7 +145,7 @@ function getBooks() {
       url: "assets/book-7.jpg",
       originalPrice: 40,
       salePrice: null,
-      rating: 4,
+      rating: 1,
     },
     {
       id: 11,
@@ -90,6 +154,8 @@ function getBooks() {
       originalPrice: 30,
       salePrice: null,
       rating: 4.5,
-    },
-  ];
+    }]
+    )
+    }, 1000);
+  })
 }
